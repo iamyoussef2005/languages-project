@@ -22,5 +22,3 @@ class ApartmentBooked extends ApartmentState {
   final String message;
   ApartmentBooked(this.message);
 }
-
-

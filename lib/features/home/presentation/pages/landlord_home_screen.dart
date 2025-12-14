@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:project1/core/utils/app_colors.dart';
 import 'package:project1/core/utils/app_responsives.dart';
 import 'package:project1/core/utils/app_styles.dart';
@@ -31,21 +32,19 @@ class _LandlordHomeScreenState extends State<LandlordHomeScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
           'Feature not available',
-          style: TextStyle(fontFamily: "Poppins"),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
-        content: const Text(
+        content: Text(
           'This feature is not yet available.',
-          style: TextStyle(fontFamily: "Poppins"),
+          style: GoogleFonts.poppins(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Close',
-              style: TextStyle(fontFamily: "Poppins"),
-            ),
+            child: Text('Close', style: GoogleFonts.poppins()),
           ),
         ],
       ),
@@ -60,28 +59,32 @@ class _LandlordHomeScreenState extends State<LandlordHomeScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacementNamed(context, "/login");
       });
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (!authState.user.isApproved) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacementNamed(context, "/pendingApproval");
       });
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    String userName = authState.user.firstName;
-    String? profileImage = authState.user.profileImageUrl;
+    final userName = authState.user.firstName;
+    final profileImage = authState.user.profileImageUrl;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F8FA),
       body: SafeArea(
-        child: _selectedIndex == 0
-            ? _buildHomeContent(userName, profileImage)
-            : _placeholderScreen(),
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: [
+            _buildHomeContent(userName, profileImage), // 0 Home
+            _placeholderScreen(),                      // 1 Favorites
+            const SizedBox(),                          // 2 Add (push فقط)
+            _placeholderScreen(),                      // 3 Messages
+            const ProfilePage(),                       // 4 Profile
+          ],
+        ),
       ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
@@ -93,10 +96,9 @@ class _LandlordHomeScreenState extends State<LandlordHomeScreen> {
         final cubit = context.read<ApartmentCubit>();
 
         return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
           slivers: [
-            SliverToBoxAdapter(
-              child: _buildAppBar(userName, profilePicture),
-            ),
+            SliverToBoxAdapter(child: _buildHeader(userName)),
             SliverToBoxAdapter(
               child: Padding(
                 padding: ResponsiveLayout.getPadding(context),
@@ -106,7 +108,7 @@ class _LandlordHomeScreenState extends State<LandlordHomeScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: ResponsiveLayout.getPadding(context),
-                child: _buildSectionTitle("Featured Apartments"),
+                child: _buildSectionTitle('Featured Apartments'),
               ),
             ),
             if (state is ApartmentLoading)
@@ -114,12 +116,9 @@ class _LandlordHomeScreenState extends State<LandlordHomeScreen> {
                 child: Center(child: CircularProgressIndicator()),
               ),
             if (state is ApartmentEmpty)
-              const SliverFillRemaining(
+              SliverFillRemaining(
                 child: Center(
-                  child: Text(
-                    "No apartments found",
-                    style: TextStyle(fontFamily: "Poppins"),
-                  ),
+                  child: Text('No apartments found', style: GoogleFonts.poppins()),
                 ),
               ),
             if (state is ApartmentLoaded)
@@ -143,43 +142,34 @@ class _LandlordHomeScreenState extends State<LandlordHomeScreen> {
     );
   }
 
-  Widget _buildAppBar(String name, String? photo) {
-    return Padding(
+  Widget _buildHeader(String name) {
+    return Container(
       padding: ResponsiveLayout.getPadding(context),
-      child: Row(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary, Color(0xFF6FA8FF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Welcome back,",
-                  style: TextStyle(
-                    fontSize: ResponsiveLayout.getFontSize(context, base: 14),
-                    color: AppColors.textSecondary,
-                    fontFamily: "Poppins",
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: ResponsiveLayout.getFontSize(context, base: 22),
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                    fontFamily: "Poppins",
-                  ),
-                ),
-              ],
-            ),
+          Text(
+            'Welcome back,',
+            style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
           ),
-          GestureDetector(
-            onTap: _notAvailable,
-            child: CircleAvatar(
-              radius: 26,
-              backgroundColor: Colors.grey[300],
-              backgroundImage: photo != null ? NetworkImage(photo) : null,
-              child: photo == null ? const Icon(Icons.person) : null,
+          const SizedBox(height: 4),
+          Text(
+            name,
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -191,7 +181,7 @@ class _LandlordHomeScreenState extends State<LandlordHomeScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [AppStyles.cardShadow],
       ),
       child: Row(
@@ -200,22 +190,20 @@ class _LandlordHomeScreenState extends State<LandlordHomeScreen> {
             child: TextField(
               controller: _searchController,
               onChanged: cubit.search,
-              style: const TextStyle(fontFamily: "Poppins"),
-              decoration: const InputDecoration(
-                hintText: "Search apartments...",
-                hintStyle: TextStyle(fontFamily: "Poppins"),
-                prefixIcon: Icon(Icons.search),
+              style: GoogleFonts.poppins(),
+              decoration: InputDecoration(
+                hintText: 'Search apartments...',
+                hintStyle: GoogleFonts.poppins(color: Colors.grey),
+                prefixIcon: const Icon(Icons.search),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.all(16),
+                contentPadding: const EdgeInsets.all(16),
               ),
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () async {
-              final filters =
-                  await Navigator.pushNamed(context, "/filtered_apartments");
-            },
+            icon: const Icon(Icons.tune),
+            onPressed: () =>
+                Navigator.pushNamed(context, '/filtered_apartments'),
           ),
         ],
       ),
@@ -225,11 +213,10 @@ class _LandlordHomeScreenState extends State<LandlordHomeScreen> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: TextStyle(
-        fontSize: ResponsiveLayout.getFontSize(context, base: 20),
-        fontWeight: FontWeight.bold,
+      style: GoogleFonts.poppins(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
-        fontFamily: "Poppins",
       ),
     );
   }
@@ -238,31 +225,34 @@ class _LandlordHomeScreenState extends State<LandlordHomeScreen> {
     return Center(
       child: ElevatedButton(
         onPressed: _notAvailable,
-        child: const Text(
-          "Feature not available",
-          style: TextStyle(fontFamily: "Poppins"),
-        ),
+        child: Text('Feature not available', style: GoogleFonts.poppins()),
       ),
     );
   }
 
   Widget _buildBottomNavBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [AppStyles.navShadow],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    return SafeArea(
+      top: false,
+      child: SizedBox(
+        height: 64,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [AppStyles.navShadow],
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _navItem(Icons.home, "Home", 0),
-              _navItem(Icons.favorite_border, "Favorites", 1),
-              _navItem(Icons.add, "Add Apartment", 2),
-              _navItem(Icons.message_outlined, "Messages", 3),
-              _navItem(Icons.person_outline, "Profile", 4),
+              _navItem(Icons.home, 'Home', 0),
+              _navItem(Icons.favorite_border, 'Favorites', 1),
+              _navItem(Icons.add, 'Add Apartment', 2),
+              _navItem(Icons.message_outlined, 'Messages', 3),
+              _navItem(Icons.person_outline, 'Profile', 4),
             ],
           ),
         ),
@@ -275,35 +265,46 @@ class _LandlordHomeScreenState extends State<LandlordHomeScreen> {
 
     return GestureDetector(
       onTap: () {
-        setState(() => _selectedIndex = index);
-
         if (index == 2) {
-          Navigator.pushNamed(context, "/add_apartment");
-        } else if (index == 4) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => ProfilePage()),
-          );
-        } else if (index != 0) {
-          _notAvailable();
+          Navigator.pushNamed(context, '/add_apartment');
+          return;
         }
+        setState(() => _selectedIndex = index);
       },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: isSelected ? AppColors.primary : AppColors.textSecondary,
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? AppColors.primary : AppColors.textSecondary,
-              fontSize: 11,
-              fontFamily: "Poppins",
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withOpacity(0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 22,
+              color: isSelected
+                  ? AppColors.primary
+                  : AppColors.textSecondary,
             ),
-          ),
-        ],
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textScaleFactor: 1.0,
+              style: GoogleFonts.poppins(
+                fontSize: 10,
+                color: isSelected
+                    ? AppColors.primary
+                    : AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

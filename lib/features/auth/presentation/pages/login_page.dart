@@ -25,8 +25,9 @@ class _LoginPageState extends State<LoginPage> {
       body: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthRejected) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
             Navigator.pushReplacementNamed(context, "/login");
           }
 
@@ -43,8 +44,9 @@ class _LoginPageState extends State<LoginPage> {
           }
 
           if (state is AuthError) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
         child: SafeArea(
@@ -137,20 +139,16 @@ class _LoginPageState extends State<LoginPage> {
                           ? null
                           : () {
                               context.read<AuthCubit>().login(
-                                    phone: _phoneController.text.trim(),
-                                    password:
-                                        _passwordController.text.trim(),
-                                  );
+                                phone: _phoneController.text.trim(),
+                                password: _passwordController.text.trim(),
+                              );
                             },
                       child: Container(
                         height: 56,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(14),
                           gradient: LinearGradient(
-                            colors: [
-                              purple,
-                              purple.withOpacity(0.85),
-                            ],
+                            colors: [purple, purple.withOpacity(0.85)],
                           ),
                         ),
                         child: Center(
@@ -180,13 +178,10 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     Text(
                       "Don't have an account? ",
-                      style: GoogleFonts.poppins(
-                        color: Colors.grey.shade700,
-                      ),
+                      style: GoogleFonts.poppins(color: Colors.grey.shade700),
                     ),
                     GestureDetector(
-                      onTap: () =>
-                          Navigator.pushNamed(context, "/register"),
+                      onTap: () => Navigator.pushNamed(context, "/register"),
                       child: Text(
                         "Register",
                         style: GoogleFonts.poppins(
@@ -236,9 +231,7 @@ class _LoginPageState extends State<LoginPage> {
           suffixIcon: isPassword
               ? IconButton(
                   icon: Icon(
-                    obscurePassword
-                        ? Icons.visibility_off
-                        : Icons.visibility,
+                    obscurePassword ? Icons.visibility_off : Icons.visibility,
                     color: purple,
                   ),
                   onPressed: onTogglePassword,
@@ -250,8 +243,10 @@ class _LoginPageState extends State<LoginPage> {
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 18,
+            horizontal: 20,
+          ),
         ),
       ),
     );

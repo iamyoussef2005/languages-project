@@ -22,11 +22,13 @@ import 'package:project1/features/home/cubit/apartment_cubit.dart';
 import 'package:project1/features/home/presentation/pages/add_apartment_screen.dart';
 import 'package:project1/features/home/presentation/pages/filter_page.dart';
 
+import 'package:project1/features/reservations/cubit/booking_cubit.dart'; // إضافة BookingCubit
+import 'package:project1/features/reservations/presentation/pages/bookings_page.dart'; // إضافة BookingsPage
+
 // Pages
 import 'package:project1/features/home/presentation/pages/home_page.dart';
 import 'package:project1/features/auth/presentation/pages/signup_page.dart';
 import 'package:project1/features/home/presentation/pages/landlord_home_screen.dart';
-import 'package:project1/features/reservations/presentation/pages/bookings_page.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -46,7 +48,6 @@ void setup() {
   );
 
   // Register Services (mock or real based on flag)
-
   getIt.registerLazySingleton<AuthService>(() => AuthService());
   getIt.registerLazySingleton<ApartmentService>(
     () => ApartmentService(dio: getIt()),
@@ -74,6 +75,9 @@ void setup() {
   getIt.registerFactory<ApartmentCubit>(
     () => ApartmentCubit(getIt<ApartmentRepository>())..loadApartments(),
   );
+  getIt.registerFactory<BookingCubit>(
+    () => BookingCubit(getIt<BookingRepository>()), // إضافة BookingCubit
+  );
 }
 
 void main() {
@@ -86,6 +90,9 @@ void main() {
         BlocProvider<ProfileCubit>(create: (_) => getIt<ProfileCubit>()),
         BlocProvider<ApartmentCubit>(
           create: (_) => getIt<ApartmentCubit>()..loadApartments(),
+        ),
+        BlocProvider<BookingCubit>(
+          create: (_) => getIt<BookingCubit>(), // إضافة BookingCubit هنا
         ),
       ],
       child: MaterialApp(

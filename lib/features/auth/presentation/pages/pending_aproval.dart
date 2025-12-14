@@ -39,18 +39,16 @@ class PendingApprovalPage extends StatelessWidget {
 
           // If error
           if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
         child: BlocBuilder<AuthCubit, AuthState>(
           builder: (context, state) {
             // Loading state
             if (state is AuthLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
 
             // Rejected state - show rejection message

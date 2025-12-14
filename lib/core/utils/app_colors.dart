@@ -11,11 +11,8 @@ class AppColors {
   static const Color cardBackground = Colors.white;
 
   static Gradient get primaryGradient => const LinearGradient(
-        colors: [
-          Color(0xFF5A6CF3),
-          Color(0xFF3C4CE0),
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
+    colors: [Color(0xFF5A6CF3), Color(0xFF3C4CE0)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:project1/core/utils/app_colors.dart';
 import 'package:project1/core/utils/app_responsives.dart';
 import 'package:project1/core/utils/app_styles.dart';
@@ -31,12 +32,19 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Feature not available', style: TextStyle(fontFamily: "Poppins")),
-        content: const Text('This feature is not yet available.', style: TextStyle(fontFamily: "Poppins")),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Feature not available',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
+        content: Text(
+          'This feature is not yet available.',
+          style: GoogleFonts.poppins(),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close', style: TextStyle(fontFamily: "Poppins")),
+            child: Text('Close', style: GoogleFonts.poppins()),
           ),
         ],
       ),
@@ -61,14 +69,22 @@ class _HomePageState extends State<HomePage> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    String userName = authState.user.firstName;
-    String? profileImage = authState.user.profileImageUrl;
+    final userName = authState.user.firstName;
+    final profileImage = authState.user.profileImageUrl;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F8FA),
       body: SafeArea(
-        child: _selectedIndex == 0
-            ? _buildHomeContent(userName, profileImage)
-            : _placeholderScreen(),
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: [
+            _buildHomeContent(userName, profileImage),
+            _placeholderScreen(),
+            _placeholderScreen(),
+            _placeholderScreen(),
+            const ProfilePage(),
+          ],
+        ),
       ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
@@ -80,12 +96,11 @@ class _HomePageState extends State<HomePage> {
         final cubit = context.read<ApartmentCubit>();
 
         return RefreshIndicator(
-          onRefresh: () async {
-            await cubit.loadApartments();
-          },
+          onRefresh: () async => cubit.loadApartments(),
           child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
             slivers: [
-              SliverToBoxAdapter(child: _buildAppBar(userName, profilePicture)),
+              SliverToBoxAdapter(child: _buildHeader(userName)),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: ResponsiveLayout.getPadding(context),
@@ -103,11 +118,11 @@ class _HomePageState extends State<HomePage> {
                   child: Center(child: CircularProgressIndicator()),
                 ),
               if (state is ApartmentEmpty)
-                const SliverFillRemaining(
+                SliverFillRemaining(
                   child: Center(
                     child: Text(
                       "No apartments found",
-                      style: TextStyle(fontFamily: "Poppins"),
+                      style: GoogleFonts.poppins(),
                     ),
                   ),
                 ),
@@ -133,45 +148,37 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAppBar(String name, String? photo) {
-    return Padding(
+  Widget _buildHeader(String name) {
+    return Container(
       padding: ResponsiveLayout.getPadding(context),
-      child: Row(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary, Color(0xFF6FA8FF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Welcome back,",
-                  style: TextStyle(
-                    fontFamily: "Poppins",
-                    fontSize: ResponsiveLayout.getFontSize(context, base: 14),
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  name,
-                  style: TextStyle(
-                    fontFamily: "Poppins",
-                    fontSize: ResponsiveLayout.getFontSize(context, base: 22),
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
+          Text(
+            "Welcome back,",
+            style: GoogleFonts.poppins(
+              fontSize: ResponsiveLayout.getFontSize(context, base: 14),
+              color: Colors.white70,
             ),
           ),
-          GestureDetector(
-            onTap: _notAvailable,
-            child: CircleAvatar(
-              radius: 26,
-              backgroundColor: Colors.grey[300],
-              backgroundImage: photo != null ? NetworkImage(photo) : null,
-              child: photo == null
-                  ? const Icon(Icons.person)
-                  : null,
+          const SizedBox(height: 4),
+          Text(
+            name,
+            style: GoogleFonts.poppins(
+              fontSize: ResponsiveLayout.getFontSize(context, base: 22),
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
         ],
@@ -183,7 +190,7 @@ class _HomePageState extends State<HomePage> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [AppStyles.cardShadow],
       ),
       child: Row(
@@ -192,18 +199,18 @@ class _HomePageState extends State<HomePage> {
             child: TextField(
               controller: _searchController,
               onChanged: cubit.search,
-              style: const TextStyle(fontFamily: "Poppins"),
-              decoration: const InputDecoration(
+              style: GoogleFonts.poppins(),
+              decoration: InputDecoration(
                 hintText: "Search apartments...",
-                hintStyle: TextStyle(fontFamily: "Poppins"),
-                prefixIcon: Icon(Icons.search),
+                hintStyle: GoogleFonts.poppins(color: Colors.grey),
+                prefixIcon: const Icon(Icons.search),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.all(16),
+                contentPadding: const EdgeInsets.all(16),
               ),
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.filter_list),
+            icon: const Icon(Icons.tune),
             onPressed: () async {
               await Navigator.pushNamed(context, "/filtered_apartments");
             },
@@ -216,10 +223,9 @@ class _HomePageState extends State<HomePage> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: TextStyle(
-        fontFamily: "Poppins",
+      style: GoogleFonts.poppins(
         fontSize: ResponsiveLayout.getFontSize(context, base: 20),
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       ),
     );
@@ -228,10 +234,14 @@ class _HomePageState extends State<HomePage> {
   Widget _placeholderScreen() {
     return Center(
       child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
         onPressed: _notAvailable,
-        child: const Text(
+        child: Text(
           "Feature not available",
-          style: TextStyle(fontFamily: "Poppins"),
+          style: GoogleFonts.poppins(),
         ),
       ),
     );
@@ -242,10 +252,14 @@ class _HomePageState extends State<HomePage> {
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [AppStyles.navShadow],
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -266,35 +280,43 @@ class _HomePageState extends State<HomePage> {
 
     return GestureDetector(
       onTap: () {
-        setState(() => _selectedIndex = index);
-
         if (index == 2) {
           Navigator.pushNamed(context, "/bookings");
-        } else if (index == 4) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => ProfilePage()),
-          );
-        } else if (index != 0) {
+          return;
+        }
+
+        setState(() {
+          _selectedIndex = index;
+        });
+
+        if (index != 0 && index != 4 && index != 2) {
           _notAvailable();
         }
       },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: isSelected ? AppColors.primary : AppColors.textSecondary,
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: "Poppins",
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
               color: isSelected ? AppColors.primary : AppColors.textSecondary,
-              fontSize: 11,
             ),
-          ),
-        ],
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -36,7 +36,7 @@ class AuthRepository {
       profileImagePath: profileImagePath,
       idImagePath: idImagePath,
       password: password,
-      isTenant: isTenant, 
+      isTenant: isTenant,
     );
     return user;
   }

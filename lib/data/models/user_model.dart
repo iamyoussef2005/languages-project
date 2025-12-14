@@ -8,9 +8,10 @@ class UserModel {
   final String status; // 'pending', 'approved', 'rejected'
   final String role; // 'tenant' or 'owner'
 
- bool get isCancelled => status.toLowerCase() == 'rejected' || status.toLowerCase() == 'cancelled';
-bool get isPending => status.toLowerCase() == 'pending';
-bool get isApproved => status.toLowerCase() == 'approved';
+  bool get isCancelled =>
+      status.toLowerCase() == 'rejected' || status.toLowerCase() == 'cancelled';
+  bool get isPending => status.toLowerCase() == 'pending';
+  bool get isApproved => status.toLowerCase() == 'approved';
 
   bool get isTenant => role.toLowerCase() == 'tenant';
 
@@ -69,8 +70,7 @@ bool get isApproved => status.toLowerCase() == 'approved';
           ? _parseDate(json["birth_date"])
           : DateTime.now(),
       // Backend uses personal_photo/id_photo; fall back to profile_image/id_image for mock compatibility
-      profileImageUrl:
-          json["personal_photo"] ?? json["profile_image"] ?? "",
+      profileImageUrl: json["personal_photo"] ?? json["profile_image"] ?? "",
       idImageUrl: json["id_photo"] ?? json["id_image"] ?? "",
       status: json["status"] ?? "",
       role: json["role"] ?? "",
@@ -90,4 +90,3 @@ bool get isApproved => status.toLowerCase() == 'approved';
     };
   }
 }
-

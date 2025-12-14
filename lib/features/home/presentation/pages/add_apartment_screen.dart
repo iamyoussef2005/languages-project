@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:project1/core/utils/app_colors.dart';
 import 'package:project1/core/utils/app_responsives.dart';
 import 'package:project1/features/home/cubit/apartment_cubit.dart';
@@ -16,6 +20,9 @@ class AddApartmentScreen extends StatefulWidget {
 
 class _AddApartmentScreenState extends State<AddApartmentScreen> {
   final _formKey = GlobalKey<FormState>();
+
+  File? _firstPhoto;
+  File? _secondPhoto;
 
   final TextEditingController _price = TextEditingController();
   final TextEditingController _city = TextEditingController();
@@ -41,11 +48,35 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
   bool _hasWifi = false;
   bool _hasParking = false;
 
+  // ---------- IMAGE PICKER ----------
+  Future<void> _pickImage(bool isFirst) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+
+    if (picked != null) {
+      setState(() {
+        if (isFirst) {
+          _firstPhoto = File(picked.path);
+        } else {
+          _secondPhoto = File(picked.path);
+        }
+      });
+    }
+  }
+
   // ---------- SUBMIT ----------
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
+    if (_firstPhoto == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("First photo is required")));
+      return;
+    }
+
     final apartment = ApartmentModel(
+      id: 0, // سيتم توليد id تلقائيًا من الـ API عند إضافة الشقة
       province: _selectedProvince!,
       city: _city.text.trim(),
       address: _address.text.trim(),
@@ -55,6 +86,8 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
       maxperson: int.parse(_maxPersons.text),
       hasWifi: _hasWifi,
       hasParking: _hasParking,
+      firstPhotoFile: _firstPhoto!,
+      secondPhotoFile: _secondPhoto,
     );
 
     context.read<ApartmentCubit>().addApartment(apartment);
@@ -63,7 +96,14 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Add Apartment"), centerTitle: true),
+      appBar: AppBar(
+        title: Text(
+          "Add Apartment",
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
+        centerTitle: true,
+      ),
+
       body: BlocListener<ApartmentCubit, ApartmentState>(
         listener: (context, state) {
           if (state is ApartmentFailure) {
@@ -79,7 +119,6 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
             Navigator.pop(context);
           }
         },
-
         child: SingleChildScrollView(
           padding: ResponsiveLayout.getPadding(context),
           child: Form(
@@ -93,17 +132,55 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
                 _buildTextField(_bedrooms, "Bedrooms", number: true),
                 _buildTextField(_bathrooms, "Bathrooms", number: true),
                 _buildTextField(_maxPersons, "Max Persons", number: true),
+
                 const SizedBox(height: 12),
-                _buildChoiceChip(
-                  title: "Wi-Fi",
-                  value: _hasWifi,
-                  onChanged: (v) => setState(() => _hasWifi = v),
+
+                /// ---------- CHIPS ----------
+                Wrap(
+                  spacing: 12,
+                  children: [
+                    _buildChoiceChip(
+                      title: "Wi-Fi",
+                      value: _hasWifi,
+                      onChanged: (v) => setState(() => _hasWifi = v),
+                    ),
+                    _buildChoiceChip(
+                      title: "Parking",
+                      value: _hasParking,
+                      onChanged: (v) => setState(() => _hasParking = v),
+                    ),
+                  ],
                 ),
 
-                _buildChoiceChip(
-                  title: "Parking",
-                  value: _hasParking,
-                  onChanged: (v) => setState(() => _hasParking = v),
+                const SizedBox(height: 30),
+
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Apartment Photos",
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                Row(
+                  children: [
+                    _buildPhotoPicker(
+                      label: "First Photo (Required)",
+                      file: _firstPhoto,
+                      onTap: () => _pickImage(true),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildPhotoPicker(
+                      label: "Second Photo (Optional)",
+                      file: _secondPhoto,
+                      onTap: () => _pickImage(false),
+                    ),
+                  ],
                 ),
 
                 const SizedBox(height: 30),
@@ -111,14 +188,21 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
                   onPressed: _submit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 40,
                       vertical: 16,
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     "Submit Apartment",
-                    style: TextStyle(color: Colors.white),
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -141,10 +225,25 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
       child: TextFormField(
         controller: controller,
         keyboardType: number ? TextInputType.number : TextInputType.text,
+        style: GoogleFonts.poppins(fontSize: 14),
         validator: (v) => v == null || v.isEmpty ? "Required" : null,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          labelStyle: GoogleFonts.poppins(),
+          filled: true,
+          fillColor: Colors.grey.shade50,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          ),
         ),
       ),
     );
@@ -155,59 +254,100 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
       padding: const EdgeInsets.only(bottom: 16),
       child: DropdownButtonFormField<String>(
         initialValue: _selectedProvince,
+        style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
+        icon: const Icon(Icons.keyboard_arrow_down_rounded),
         decoration: InputDecoration(
           labelText: "Province",
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          labelStyle: GoogleFonts.poppins(),
+          filled: true,
+          fillColor: Colors.grey.shade50,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          ),
         ),
-        items: const [
-          'Cairo',
-          'Alexandria',
-          'Giza',
-        ].map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),
-        onChanged: (v) => setState(() => _selectedProvince = v),
-        validator: (v) => v == null ? "Required" : null,
+        items: const ['Damascus', 'Aleppo', 'Lattakia', 'Homs', 'Hama']
+            .map(
+              (province) => DropdownMenuItem<String>(
+                value: province,
+                child: Text(
+                  province,
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                ),
+              ),
+            )
+            .toList(),
+        onChanged: (value) => setState(() => _selectedProvince = value),
+        validator: (value) => value == null ? "Please select a province" : null,
       ),
     );
   }
-Widget _buildChoiceChip({
-  required String title,
-  required bool value,
-  required ValueChanged<bool> onChanged,
-}) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: Row(
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(width: 12),
-        ChoiceChip(
-          label: Text(
-            value ? "Yes" : "No",
-            style: const TextStyle(fontSize: 14),
-          ),
-          selected: value,
-          selectedColor: AppColors.primary.withOpacity(0.15),
-          backgroundColor: Colors.grey.shade200,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          onSelected: (selected) {
-            onChanged(!value); // قلب القيمة فقط حسب لوجيكك الأصلي
-          },
-          labelStyle: TextStyle(
-            color: value ? AppColors.primary : Colors.black87,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    ),
-  );
-}
 
+  Widget _buildChoiceChip({
+    required String title,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return ChoiceChip(
+      label: Text(
+        title,
+        style: TextStyle(
+          color: value ? Colors.white : Colors.black87,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      selected: value,
+      selectedColor: AppColors.primary,
+      backgroundColor: Colors.white,
+      side: BorderSide(
+        color: value ? AppColors.primary : Colors.grey.shade400,
+        width: 1.2,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      onSelected: (_) => onChanged(!value),
+    );
+  }
+
+  Widget _buildPhotoPicker({
+    required String label,
+    required File? file,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          height: 140,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade400),
+          ),
+          child: file == null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
+                )
+              : ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(file, fit: BoxFit.cover),
+                ),
+        ),
+      ),
+    );
+  }
 }

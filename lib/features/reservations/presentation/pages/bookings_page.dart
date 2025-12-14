@@ -21,43 +21,39 @@ class _BookingsPageState extends State<BookingsPage> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Bookings"),
+          title: const Text("My Bookings"),
           bottom: const TabBar(
+            isScrollable: true,
             tabs: [
+              Tab(text: "Pending"),
               Tab(text: "Current"),
               Tab(text: "Past"),
               Tab(text: "Cancelled"),
+              Tab(text: "Rejected"),
             ],
           ),
         ),
-        body: BlocConsumer<BookingCubit, BookingState>(
-          listener: (context, state) {
-            if (state is BookingError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message)),
-              );
-            }
-          },
+        body: BlocBuilder<BookingCubit, BookingState>(
           builder: (context, state) {
             if (state is BookingLoading || state is BookingInitial) {
               return const Center(child: CircularProgressIndicator());
             }
 
             if (state is BookingError) {
-              return Center(
-                child: Text(state.message),
-              );
+              return Center(child: Text(state.message));
             }
 
             if (state is BookingLoaded) {
               return TabBarView(
                 children: [
+                  _buildList(state.pending),
                   _buildList(state.current, canCancel: true),
                   _buildList(state.past),
                   _buildList(state.cancelled),
+                  _buildList(state.rejected),
                 ],
               );
             }
@@ -78,12 +74,14 @@ class _BookingsPageState extends State<BookingsPage> {
       padding: const EdgeInsets.all(12),
       itemBuilder: (context, index) {
         final b = bookings[index];
+
         return Card(
           elevation: 2,
           child: ListTile(
             title: Text(b.apartment.address),
             subtitle: Text(
-              "${b.startDate.toLocal().toString().split(' ').first} - ${b.endDate.toLocal().toString().split(' ').first}\n${b.apartment.city}, ${b.apartment.province}",
+              "${b.checkIn.toString().split(' ').first} → ${b.checkOut.toString().split(' ').first}\n"
+              "${b.apartment.city}, ${b.apartment.province}",
             ),
             trailing: canCancel
                 ? TextButton(
@@ -94,7 +92,7 @@ class _BookingsPageState extends State<BookingsPage> {
                   )
                 : Text(
                     b.status.toUpperCase(),
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    style: const TextStyle(color: Colors.grey),
                   ),
           ),
         );
@@ -104,4 +102,3 @@ class _BookingsPageState extends State<BookingsPage> {
     );
   }
 }
-

@@ -1,6 +1,6 @@
-
-
 import 'package:flutter/material.dart';
+
+import 'filter_results_page.dart';
 
 class FilterPage extends StatefulWidget {
   const FilterPage({super.key});
@@ -10,94 +10,133 @@ class FilterPage extends StatefulWidget {
 }
 
 class _FilterPageState extends State<FilterPage> {
-  String? selectedCity;
-  String? selectedGovernorate;
-  double? minPrice;
-  double? maxPrice;
-  bool? hasBalcony;
+  final TextEditingController provinceController = TextEditingController();
+  final TextEditingController cityController = TextEditingController();
+  final TextEditingController minPriceController = TextEditingController();
+  final TextEditingController maxPriceController = TextEditingController();
+
+  bool? hasWifi;
+  bool? hasParking;
+  int? bedrooms;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Filter Apartments")),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
 
-            // Governorate
-            DropdownButtonFormField<String>(
-              initialValue: selectedGovernorate,
-              hint: const Text("Governorate"),
-              items: ["Riyadh", "Makkah", "Eastern Province"]
-                  .map((gov) => DropdownMenuItem(
-                        value: gov,
-                        child: Text(gov),
-                      ))
-                  .toList(),
-              onChanged: (v) => setState(() => selectedGovernorate = v),
+            // Province (text input)
+            TextField(
+              controller: provinceController,
+              decoration: const InputDecoration(
+                labelText: "Province",
+                border: OutlineInputBorder(),
+              ),
             ),
 
             const SizedBox(height: 16),
 
-            // City
-            DropdownButtonFormField<String>(
-              initialValue: selectedCity,
-              hint: const Text("City"),
-              items: ["Riyadh", "Jeddah", "Dammam"]
-                  .map((city) => DropdownMenuItem(
-                        value: city,
-                        child: Text(city),
-                      ))
-                  .toList(),
-              onChanged: (v) => setState(() => selectedCity = v),
+            // City (text input)
+            TextField(
+              controller: cityController,
+              decoration: const InputDecoration(
+                labelText: "City",
+                border: OutlineInputBorder(),
+              ),
             ),
 
             const SizedBox(height: 16),
 
-            // Min price
+            // Bedrooms
             TextField(
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "Min Price"),
-              onChanged: (v) => minPrice = double.tryParse(v),
+              decoration: const InputDecoration(
+                labelText: "Bedrooms",
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (v) => bedrooms = int.tryParse(v),
             ),
 
             const SizedBox(height: 16),
 
-            // Max price
+            // Min Price
             TextField(
+              controller: minPriceController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "Max Price"),
-              onChanged: (v) => maxPrice = double.tryParse(v),
+              decoration: const InputDecoration(
+                labelText: "Min Price",
+                border: OutlineInputBorder(),
+              ),
             ),
 
             const SizedBox(height: 16),
 
-            // Balcony filter
+            // Max Price
+            TextField(
+              controller: maxPriceController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: "Max Price",
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // WiFi filter
             SwitchListTile(
-              title: const Text("Has balcony"),
-              value: hasBalcony ?? false,
-              onChanged: (v) => setState(() => hasBalcony = v),
+              title: const Text("Has WiFi"),
+              value: hasWifi ?? false,
+              onChanged: (v) => setState(() => hasWifi = v),
             ),
 
-            const Spacer(),
-
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context, {
-                  "city": selectedCity,
-                  "governorate": selectedGovernorate,
-                  "minPrice": minPrice,
-                  "maxPrice": maxPrice,
-                  "hasBalcony": hasBalcony,
-                });
-              },
-              child: const Text("Apply Filters"),
+            // Parking filter
+            SwitchListTile(
+              title: const Text("Has Parking"),
+              value: hasParking ?? false,
+              onChanged: (v) => setState(() => hasParking = v),
             ),
+
+            const SizedBox(height: 24),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => FilterResultsPage(
+                        province: provinceController.text.isEmpty
+                            ? null
+                            : provinceController.text,
+                        city: cityController.text.isEmpty
+                            ? null
+                            : cityController.text,
+                        minPrice: minPriceController.text.isEmpty
+                            ? null
+                            : double.tryParse(minPriceController.text),
+                        maxPrice: maxPriceController.text.isEmpty
+                            ? null
+                            : double.tryParse(maxPriceController.text),
+                        bedrooms: bedrooms,
+                        hasWifi: hasWifi,
+                        hasParking: hasParking,
+                      ),
+                    ),
+                  );
+                },
+                child: const Text("Apply Filters"),
+              ),
+            )
           ],
         ),
       ),
     );
   }
 }
+

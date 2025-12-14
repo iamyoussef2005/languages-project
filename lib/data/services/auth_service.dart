@@ -265,7 +265,6 @@ class AuthService {
           "${birthDate.year}-${birthDate.month.toString().padLeft(2, '0')}-${birthDate.day.toString().padLeft(2, '0')}";
 
       FormData formData = FormData.fromMap({
-       
         "first_name": firstName,
         "last_name": lastName,
         "birth_date": birthDateStr,

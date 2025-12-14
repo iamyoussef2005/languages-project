@@ -10,7 +10,7 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeFont = GoogleFonts.poppins(); // يمكنك استبداله بـ Cairo()
+    final themeFont = GoogleFonts.poppins();
 
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
@@ -21,9 +21,7 @@ class ProfilePage extends StatelessWidget {
       child: BlocBuilder<AuthCubit, AuthState>(
         builder: (context, state) {
           if (state is! AuthLoggedIn) {
-            return const Scaffold(
-              body: Center(child: Text("Not logged in")),
-            );
+            return const Scaffold(body: Center(child: Text("Not logged in")));
           }
 
           final user = state.user;
@@ -31,7 +29,13 @@ class ProfilePage extends StatelessWidget {
           return Scaffold(
             backgroundColor: const Color(0xfff5f6fb),
             appBar: AppBar(
-              title: Text("Profile", style: themeFont.copyWith(fontSize: 20, fontWeight: FontWeight.w600)),
+              title: Text(
+                "Profile",
+                style: themeFont.copyWith(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               elevation: 0,
               backgroundColor: Colors.transparent,
               foregroundColor: Colors.black87,
@@ -41,9 +45,11 @@ class ProfilePage extends StatelessWidget {
             body: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                // ===== بطاقة العنوان =====
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 24,
+                    horizontal: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
@@ -53,7 +59,7 @@ class ProfilePage extends StatelessWidget {
                         spreadRadius: 1,
                         blurRadius: 6,
                         offset: const Offset(0, 2),
-                      )
+                      ),
                     ],
                   ),
                   child: Column(
@@ -71,27 +77,37 @@ class ProfilePage extends StatelessWidget {
                       const SizedBox(height: 12),
                       Text(
                         "${user.firstName} ${user.lastName}",
-                        style: themeFont.copyWith(fontSize: 20, fontWeight: FontWeight.w600),
+                        style: themeFont.copyWith(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
-                          color: user.isApproved ? Colors.blue.shade600 : Colors.orange.shade600,
+                          color: user.isApproved
+                              ? Colors.blue.shade600
+                              : Colors.orange.shade600,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           user.isApproved ? "APPROVED" : "PENDING",
-                          style: themeFont.copyWith(color: Colors.white, fontSize: 12),
+                          style: themeFont.copyWith(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
 
                 const SizedBox(height: 22),
 
-                // ===== بطاقة المعلومات الشخصية =====
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
@@ -109,8 +125,13 @@ class ProfilePage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Personal Information",
-                          style: themeFont.copyWith(fontSize: 16, fontWeight: FontWeight.w600)),
+                      Text(
+                        "Personal Information",
+                        style: themeFont.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       const SizedBox(height: 16),
 
                       _infoTile(
@@ -140,20 +161,19 @@ class ProfilePage extends StatelessWidget {
                 const SizedBox(height: 22),
 
                 // ===== Settings =====
-              _settingsTile(
-  context,
-  icon: Icons.edit,
-  title: "Edit Profile",
-  subtitle: "Modify your personal information",
-  font: themeFont,
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => EditProfilePage(user)),
-    );
-  },
-),
-
+                _settingsTile(
+                  context,
+                  icon: Icons.edit,
+                  title: "Edit Profile",
+                  subtitle: "Modify your personal information",
+                  font: themeFont,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => EditProfilePage(user)),
+                    );
+                  },
+                ),
 
                 const SizedBox(height: 12),
 
@@ -211,11 +231,17 @@ class ProfilePage extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: font.copyWith(fontSize: 13, color: Colors.black54)),
+              Text(
+                label,
+                style: font.copyWith(fontSize: 13, color: Colors.black54),
+              ),
               const SizedBox(height: 4),
-              Text(value, style: font.copyWith(fontSize: 15, fontWeight: FontWeight.w500)),
+              Text(
+                value,
+                style: font.copyWith(fontSize: 15, fontWeight: FontWeight.w500),
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -256,13 +282,27 @@ class ProfilePage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: font.copyWith(fontSize: 16, fontWeight: FontWeight.w600, color: textColor)),
+                  Text(
+                    title,
+                    style: font.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: font.copyWith(fontSize: 13, color: Colors.black54)),
+                  Text(
+                    subtitle,
+                    style: font.copyWith(fontSize: 13, color: Colors.black54),
+                  ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.black45),
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Colors.black45,
+            ),
           ],
         ),
       ),

@@ -175,74 +175,6 @@ class _SignUpPageState extends State<SignUpPage> {
 
               const SizedBox(height: 15),
 
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _isTenant ? "Tenant" : "Owner",
-                    icon: const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: Color(0xFF6C3FFA),
-                    ),
-                    style: const TextStyle(
-                      fontFamily: "Poppins",
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: "Tenant",
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.person_outline,
-                              color: Color(0xFF6C3FFA),
-                            ),
-                            SizedBox(width: 10),
-                            Text("Tenant"),
-                          ],
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: "Owner",
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.home_work_outlined,
-                              color: Color(0xFF6C3FFA),
-                            ),
-                            SizedBox(width: 10),
-                            Text("Owner"),
-                          ],
-                        ),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        _isTenant =
-                            value == "Tenant"; // نفس اللوجيك القديم تماماً
-                      });
-                    },
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 25),
-
               // Date of Birth
               GestureDetector(
                 onTap: () async {
@@ -337,7 +269,72 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
 
               const SizedBox(height: 40),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _isTenant ? "Tenant" : "Owner",
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: Color(0xFF6C3FFA),
+                    ),
+                    style: const TextStyle(
+                      fontFamily: "Poppins",
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: "Tenant",
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.person_outline,
+                              color: Color(0xFF6C3FFA),
+                            ),
+                            SizedBox(width: 10),
+                            Text("Tenant"),
+                          ],
+                        ),
+                      ),
+                      DropdownMenuItem(
+                        value: "Owner",
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.home_work_outlined,
+                              color: Color(0xFF6C3FFA),
+                            ),
+                            SizedBox(width: 10),
+                            Text("Owner"),
+                          ],
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _isTenant = value == "Tenant";
+                      });
+                    },
+                  ),
+                ),
+              ),
 
+              const SizedBox(height: 25),
               // SIGN UP BUTTON
               Container(
                 height: 58,

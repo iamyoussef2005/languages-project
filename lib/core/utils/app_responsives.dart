@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class ResponsiveLayout {
-
   static EdgeInsets getPadding(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
 

@@ -5,7 +5,9 @@ import 'apartment_state.dart';
 
 class ApartmentCubit extends Cubit<ApartmentState> {
   final ApartmentRepository repository;
-  List<ApartmentModel> _originalList = [];
+
+  // القائمة الأصلية لكل الشقق
+  List<ApartmentModel> _allApartments = [];
 
   ApartmentCubit(this.repository) : super(ApartmentInitial());
 
@@ -16,47 +18,73 @@ class ApartmentCubit extends Cubit<ApartmentState> {
       emit(ApartmentBooked('Apartment added successfully'));
       await loadApartments();
     } catch (e) {
-      emit(
-        ApartmentFailure(e.toString().replaceFirst('Exception: ', '').trim()),
-      );
+      emit(ApartmentFailure(e.toString().replaceFirst('Exception: ', '').trim()));
     }
   }
 
-Future<void> loadApartments() async {
-  emit(ApartmentLoading());  // تأكد من أن الحالة هي تحميل
-  try {
-    final apartments = await repository.fetchApartments();  // استدعاء الخدمة
-    _originalList = apartments;  // تخزين الشقق في _originalList
+  Future<void> loadApartments() async {
+    emit(ApartmentLoading());
+    try {
+      final apartments = await repository.fetchApartments();
 
-    if (apartments.isEmpty) {
-      emit(ApartmentEmpty());  // إذا كانت الشقق فارغة
-    } else {
-      emit(ApartmentLoaded(apartments));  // إرسال الشقق التي تم تحميلها
+      // حفظ القائمة الأصلية
+      _allApartments = apartments;
+
+      if (apartments.isEmpty) {
+        emit(ApartmentEmpty());
+      } else {
+        emit(ApartmentLoaded(apartments));
+      }
+    } catch (e) {
+      emit(ApartmentFailure(e.toString().replaceFirst('Exception: ', '').trim()));
     }
-  } catch (e) {
-    emit(
-      ApartmentFailure(
-        e.toString().replaceFirst('Exception: ', '').trim(),
-      ),
-    );
   }
+
+  // البحث في الشقق
+void search(String query) {
+  if (state is! ApartmentLoaded) return;
+
+  if (query.isEmpty) {
+    emit(ApartmentLoaded(_allApartments));
+    return;
+  }
+
+  final filtered = _allApartments.where((apartment) {
+    return apartment.address.toLowerCase().contains(query.toLowerCase());
+  }).toList();
+
+  emit(ApartmentLoaded(filtered));
 }
 
 
-  void search(String query) {
-    final q = query.trim().toLowerCase();
+  Future<void> filterApartments({
+    String? province,
+    String? city,
+    double? minPrice,
+    double? maxPrice,
+    int? bedrooms,
+    bool? hasWifi,
+    bool? hasParking,
+  }) async {
+    emit(ApartmentLoading());
+    try {
+      final results = await repository.filterApartments(
+        province: province,
+        city: city,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        bedrooms: bedrooms,
+        hasWifi: hasWifi,
+        hasParking: hasParking,
+      );
 
-    if (q.isEmpty) {
-      emit(ApartmentLoaded(_originalList));
-      return;
+      if (results.isEmpty) {
+        emit(ApartmentEmpty());
+      } else {
+        emit(ApartmentLoaded(results));
+      }
+    } catch (e) {
+      emit(ApartmentFailure(e.toString().replaceFirst('Exception: ', '').trim()));
     }
-
-    final filtered = _originalList.where((apt) {
-      return apt.city.toLowerCase().contains(q) ||
-          apt.province.toLowerCase().contains(q) ||
-          apt.address.toLowerCase().contains(q);
-    }).toList();
-
-    filtered.isEmpty ? emit(ApartmentEmpty()) : emit(ApartmentLoaded(filtered));
   }
 }
