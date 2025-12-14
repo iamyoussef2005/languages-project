@@ -42,11 +42,7 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen> {
     final authState = context.read<AuthCubit>().state;
     final apartment = widget.apartment;
 
-    // منع المالك من الحجز
-    if (authState is AuthLoggedIn && authState.user.role == "owner") {
-      _showSnackbar("Access Denied", "You're an owner, you can't reserve an apartment.");
-      return;
-    }
+ 
 
     // التحقق من التواريخ
     if (_startDateController.text.isEmpty || _endDateController.text.isEmpty) {
@@ -87,15 +83,17 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen> {
   // دالة لعرض الرسائل في Snackbar
   void _showSnackbar(String title, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 3),
-      ),
+      SnackBar(content: Text(message), duration: const Duration(seconds: 3)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = context.watch<AuthCubit>().state;
+
+    final bool isOwner =
+        authState is AuthLoggedIn && authState.user.role == "owner";
+
     final apartment = widget.apartment;
 
     final List<String> images = [
@@ -134,14 +132,14 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen> {
                   child: CarouselSlider(
                     items: images.isNotEmpty
                         ? images
-                            .map(
-                              (img) => Image.network(
-                                img,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                            .toList()
+                              .map(
+                                (img) => Image.network(
+                                  img,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                              .toList()
                         : [
                             Image.network(
                               "https://via.placeholder.com/600x300",
@@ -181,93 +179,110 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen> {
                 const SizedBox(height: 20),
 
                 // معلومات أساسية
-                _infoRow("Price per night", "${apartment.pricePerNight.toStringAsFixed(0)} USD"),
+                _infoRow(
+                  "Price per night",
+                  "${apartment.pricePerNight.toStringAsFixed(0)} USD",
+                ),
                 _infoRow("Bedrooms", "${apartment.bedrooms}"),
                 _infoRow("Bathrooms", "${apartment.bathroom}"),
                 _infoRow("Max Persons", "${apartment.maxperson}"),
-                _infoRow("Wi-Fi", apartment.hasWifi ? "Available" : "Not Available"),
-                _infoRow("Parking", apartment.hasParking ? "Available" : "Not Available"),
-
-                const SizedBox(height: 30),
-
-                // التواريخ
-                Text("Select Start Date", style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: _startDateController,
-                  readOnly: true,
-                  style: GoogleFonts.poppins(),
-                  decoration: InputDecoration(
-                    hintText: "Start date",
-                    hintStyle: GoogleFonts.poppins(),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.calendar_today),
-                      onPressed: () => _selectDate(_startDateController),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
+                _infoRow(
+                  "Wi-Fi",
+                  apartment.hasWifi ? "Available" : "Not Available",
                 ),
-
-                const SizedBox(height: 16),
-
-                Text("Select End Date", style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: _endDateController,
-                  readOnly: true,
-                  style: GoogleFonts.poppins(),
-                  decoration: InputDecoration(
-                    hintText: "End date",
-                    hintStyle: GoogleFonts.poppins(),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.calendar_today),
-                      onPressed: () => _selectDate(_endDateController),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
+                _infoRow(
+                  "Parking",
+                  apartment.hasParking ? "Available" : "Not Available",
                 ),
+                if (!isOwner) ...[
+                  const SizedBox(height: 30),
 
-                const SizedBox(height: 30),
-
-                const SizedBox(height: 20),
-
-                Text("Number of Persons", style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
-                const SizedBox(height: 6),
-
-                TextField(
-                  controller: _personsController,
-                  keyboardType: TextInputType.number,
-                  style: GoogleFonts.poppins(),
-                  decoration: InputDecoration(
-                    hintText: "Enter number of persons",
-                    hintStyle: GoogleFonts.poppins(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                  // التواريخ
+                  Text(
+                    "Select Start Date",
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
                   ),
-                ),
-
-                // زر الحجز
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _bookApartment,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: _startDateController,
+                    readOnly: true,
+                    style: GoogleFonts.poppins(),
+                    decoration: InputDecoration(
+                      hintText: "Start date",
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.calendar_today),
+                        onPressed: () => _selectDate(_startDateController),
+                      ),
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: Text(
-                      "Book Apartment",
-                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  Text(
+                    "Select End Date",
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: _endDateController,
+                    readOnly: true,
+                    style: GoogleFonts.poppins(),
+                    decoration: InputDecoration(
+                      hintText: "End date",
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.calendar_today),
+                        onPressed: () => _selectDate(_endDateController),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
-                ),
+
+                  const SizedBox(height: 20),
+
+                  Text(
+                    "Number of Persons",
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: _personsController,
+                    keyboardType: TextInputType.number,
+                    style: GoogleFonts.poppins(),
+                    decoration: InputDecoration(
+                      hintText: "Enter number of persons",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _bookApartment,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Text(
+                        "Book Apartment",
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -282,12 +297,22 @@ class _ApartmentDetailsScreenState extends State<ApartmentDetailsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title,
-              style: GoogleFonts.poppins(
-                  fontSize: 15, fontWeight: FontWeight.w500, color: Colors.grey[700])),
-          Text(value,
-              style: GoogleFonts.poppins(
-                  fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black)),
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[700],
+            ),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
         ],
       ),
     );
