@@ -10,6 +10,8 @@ import 'package:project1/features/auth/presentation/pages/profile_page.dart';
 import 'package:project1/features/home/cubit/apartment_cubit.dart';
 import 'package:project1/features/home/cubit/apartment_state.dart';
 import 'package:project1/features/home/presentation/widgets/home_apartment_card.dart';
+import 'package:project1/core/theme/theme_provider.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,6 +23,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TextEditingController _searchController = TextEditingController();
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      context.read<ApartmentCubit>().loadApartments();
+    });
+  }
 
   @override
   void dispose() {
@@ -54,6 +64,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthCubit>().state;
+    final themeProvider = context.watch<ThemeProvider>();
 
     if (authState is! AuthLoggedIn) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -73,7 +84,29 @@ class _HomePageState extends State<HomePage> {
     final profileImage = authState.user.profileImageUrl;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        title: Text(
+          'Welcome, $userName',
+          style: GoogleFonts.poppins(
+            color: Theme.of(context).appBarTheme.foregroundColor,
+            fontSize: 22,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              themeProvider.isDarkMode ? Icons.wb_sunny : Icons.nightlight_round,
+              color: Theme.of(context).appBarTheme.foregroundColor,
+            ),
+            onPressed: () {
+              context.read<ThemeProvider>().toggleTheme();
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         child: IndexedStack(
           index: _selectedIndex,
@@ -96,7 +129,10 @@ class _HomePageState extends State<HomePage> {
         final cubit = context.read<ApartmentCubit>();
 
         return RefreshIndicator(
-          onRefresh: () async => cubit.loadApartments(),
+          onRefresh: () async {
+            _searchController.clear();
+            await cubit.loadApartments();
+          },
           child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
@@ -151,13 +187,13 @@ class _HomePageState extends State<HomePage> {
   Widget _buildHeader(String name) {
     return Container(
       padding: ResponsiveLayout.getPadding(context),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.primary, Color(0xFF6FA8FF)],
+          colors: [AppColors.primary, const Color(0xFF6FA8FF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
         ),
@@ -167,16 +203,13 @@ class _HomePageState extends State<HomePage> {
         children: [
           Text(
             "Welcome back,",
-            style: GoogleFonts.poppins(
-              fontSize: ResponsiveLayout.getFontSize(context, base: 14),
-              color: Colors.white70,
-            ),
+            style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 4),
           Text(
             name,
             style: GoogleFonts.poppins(
-              fontSize: ResponsiveLayout.getFontSize(context, base: 22),
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -189,7 +222,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildSearchBar(ApartmentCubit cubit) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [AppStyles.cardShadow],
       ),
@@ -213,6 +246,8 @@ class _HomePageState extends State<HomePage> {
             icon: const Icon(Icons.tune),
             onPressed: () async {
               await Navigator.pushNamed(context, "/filtered_apartments");
+              _searchController.clear();
+              context.read<ApartmentCubit>().loadApartments();
             },
           ),
         ],
@@ -224,7 +259,7 @@ class _HomePageState extends State<HomePage> {
     return Text(
       title,
       style: GoogleFonts.poppins(
-        fontSize: ResponsiveLayout.getFontSize(context, base: 20),
+        fontSize: 20,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       ),
@@ -234,38 +269,32 @@ class _HomePageState extends State<HomePage> {
   Widget _placeholderScreen() {
     return Center(
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
         onPressed: _notAvailable,
-        child: Text(
-          "Feature not available",
-          style: GoogleFonts.poppins(),
-        ),
+        child: Text("Feature not available", style: GoogleFonts.poppins()),
       ),
     );
   }
 
   Widget _buildBottomNavBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [AppStyles.navShadow],
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
+    return SafeArea(
+      top: false,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
+          boxShadow: [AppStyles.navShadow],
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
         ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: SizedBox(
+          height: 64,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _navItem(Icons.home, "Home", 0),
               _navItem(Icons.favorite_border, "Favorites", 1),
-              _navItem(Icons.calendar_today, "Bookings", 2),
+              _navItem(Icons.calendar_month, "Bookings", 2),
               _navItem(Icons.message_outlined, "Messages", 3),
               _navItem(Icons.person_outline, "Profile", 4),
             ],
@@ -285,9 +314,7 @@ class _HomePageState extends State<HomePage> {
           return;
         }
 
-        setState(() {
-          _selectedIndex = index;
-        });
+        setState(() => _selectedIndex = index);
 
         if (index != 0 && index != 4 && index != 2) {
           _notAvailable();
@@ -297,7 +324,9 @@ class _HomePageState extends State<HomePage> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+          color: isSelected
+              ? AppColors.primary.withOpacity(0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -305,14 +334,16 @@ class _HomePageState extends State<HomePage> {
           children: [
             Icon(
               icon,
-              color: isSelected ? AppColors.primary : AppColors.textSecondary,
+              color:
+                  isSelected ? AppColors.primary : AppColors.textSecondary,
             ),
             const SizedBox(height: 2),
             Text(
               label,
               style: GoogleFonts.poppins(
-                color: isSelected ? AppColors.primary : AppColors.textSecondary,
                 fontSize: 11,
+                color:
+                    isSelected ? AppColors.primary : AppColors.textSecondary,
               ),
             ),
           ],

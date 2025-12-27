@@ -12,6 +12,11 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeFont = GoogleFonts.poppins();
 
+    // الحصول على ألوان الثيم باستخدام Theme.of(context)
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final TextStyle textStylePrimary = Theme.of(context).textTheme.bodyLarge!;
+    final TextStyle textStyleSecondary = Theme.of(context).textTheme.bodyMedium!;
+
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthLoggedOut) {
@@ -27,7 +32,7 @@ class ProfilePage extends StatelessWidget {
           final user = state.user;
 
           return Scaffold(
-            backgroundColor: const Color(0xfff5f6fb),
+            backgroundColor: colorScheme.background,
             appBar: AppBar(
               title: Text(
                 "Profile",
@@ -38,7 +43,7 @@ class ProfilePage extends StatelessWidget {
               ),
               elevation: 0,
               backgroundColor: Colors.transparent,
-              foregroundColor: Colors.black87,
+              foregroundColor: colorScheme.onBackground,
               centerTitle: true,
             ),
 
@@ -51,11 +56,11 @@ class ProfilePage extends StatelessWidget {
                     horizontal: 16,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black12,
+                        color: colorScheme.onSurface.withOpacity(0.12),
                         spreadRadius: 1,
                         blurRadius: 6,
                         offset: const Offset(0, 2),
@@ -90,14 +95,14 @@ class ProfilePage extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: user.isApproved
-                              ? Colors.blue.shade600
-                              : Colors.orange.shade600,
+                              ? colorScheme.primary
+                              : colorScheme.secondary,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           user.isApproved ? "APPROVED" : "PENDING",
                           style: themeFont.copyWith(
-                            color: Colors.white,
+                            color: colorScheme.onSecondary,
                             fontSize: 12,
                           ),
                         ),
@@ -111,11 +116,11 @@ class ProfilePage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black12,
+                        color: colorScheme.onSurface.withOpacity(0.12),
                         spreadRadius: 1,
                         blurRadius: 6,
                         offset: const Offset(0, 2),
@@ -135,6 +140,7 @@ class ProfilePage extends StatelessWidget {
                       const SizedBox(height: 16),
 
                       _infoTile(
+                        context, // تمرير context هنا
                         icon: Icons.person,
                         label: "Name",
                         value: "${user.firstName} ${user.lastName}",
@@ -142,6 +148,7 @@ class ProfilePage extends StatelessWidget {
                       ),
 
                       _infoTile(
+                        context, // تمرير context هنا
                         icon: Icons.phone,
                         label: "Mobile",
                         value: user.phone,
@@ -149,6 +156,7 @@ class ProfilePage extends StatelessWidget {
                       ),
 
                       _infoTile(
+                        context, // تمرير context هنا
                         icon: Icons.calendar_today,
                         label: "Date of Birth",
                         value: user.birthDate.toString().split(' ')[0],
@@ -195,8 +203,8 @@ class ProfilePage extends StatelessWidget {
                   title: "Logout",
                   subtitle: "Sign out of your account",
                   font: themeFont,
-                  iconColor: Colors.red,
-                  textColor: Colors.red,
+                  iconColor: colorScheme.error,
+                  textColor: colorScheme.error,
                   onTap: () {
                     context.read<AuthCubit>().logout();
                   },
@@ -209,7 +217,9 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _infoTile({
+  // تعديل الأسلوب لتمرير context
+  Widget _infoTile(
+    BuildContext context, {
     required IconData icon,
     required String label,
     required String value,
@@ -222,10 +232,10 @@ class ProfilePage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xffeef0f6),
+              color: Theme.of(context).colorScheme.secondaryContainer,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: Colors.blue.shade700),
+            child: Icon(icon, color: Theme.of(context).colorScheme.primary),
           ),
           const SizedBox(width: 12),
           Column(
@@ -233,7 +243,7 @@ class ProfilePage extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: font.copyWith(fontSize: 13, color: Colors.black54),
+                style: font.copyWith(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
               const SizedBox(height: 4),
               Text(
@@ -247,6 +257,7 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
+  // تعديل الأسلوب لتمرير context
   Widget _settingsTile(
     BuildContext context, {
     required IconData icon,
@@ -254,20 +265,22 @@ class ProfilePage extends StatelessWidget {
     required String subtitle,
     required TextStyle font,
     required VoidCallback onTap,
-    Color iconColor = Colors.black87,
-    Color textColor = Colors.black87,
+    Color iconColor = const Color.fromARGB(221, 44, 151, 17),
+    Color textColor = const Color.fromARGB(221, 66, 189, 8),
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black12,
+              color: colorScheme.onSurface.withOpacity(0.12),
               spreadRadius: 1,
               blurRadius: 6,
               offset: const Offset(0, 2),
@@ -293,7 +306,7 @@ class ProfilePage extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: font.copyWith(fontSize: 13, color: Colors.black54),
+                    style: font.copyWith(fontSize: 13, color: colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -301,7 +314,7 @@ class ProfilePage extends StatelessWidget {
             const Icon(
               Icons.arrow_forward_ios,
               size: 16,
-              color: Colors.black45,
+              color: Color.fromARGB(115, 29, 70, 184),
             ),
           ],
         ),

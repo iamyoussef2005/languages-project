@@ -48,6 +48,12 @@ class _FilterResultsPageState extends State<FilterResultsPage> {
   }
 
   @override
+  void dispose() {
+    context.read<ApartmentCubit>().loadApartments();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Filtered Results")),
@@ -89,3 +95,135 @@ class _FilterResultsPageState extends State<FilterResultsPage> {
     );
   }
 }
+
+
+
+
+
+// import 'package:flutter/material.dart';
+// import 'package:flutter_bloc/flutter_bloc.dart';
+// import 'package:project1/features/home/cubit/apartment_cubit.dart';
+// import 'package:project1/features/home/cubit/apartment_state.dart';
+// import 'package:project1/features/home/presentation/widgets/home_apartment_card.dart';
+
+// class FilterResultsPage extends StatefulWidget {
+//   final String? province;
+//   final String? city;
+//   final double? minPrice;
+//   final double? maxPrice;
+//   final int? bedrooms;
+//   final bool? hasWifi;
+//   final bool? hasParking;
+
+//   const FilterResultsPage({
+//     super.key,
+//     this.province,
+//     this.city,
+//     this.minPrice,
+//     this.maxPrice,
+//     this.bedrooms,
+//     this.hasWifi,
+//     this.hasParking,
+//   });
+
+//   @override
+//   State<FilterResultsPage> createState() => _FilterResultsPageState();
+// }
+
+// class _FilterResultsPageState extends State<FilterResultsPage> {
+//   @override
+//   void initState() {
+//     super.initState();
+//     _applyFilters();
+//   }
+
+//   @override
+//   void dispose() {
+//     // إعادة تحميل كل الشقق عند مغادرة صفحة الفلترة
+//     context.read<ApartmentCubit>().loadApartments();
+//     super.dispose();
+//   }
+
+//   void _applyFilters() {
+//     Future.microtask(() {
+//       context.read<ApartmentCubit>().filterApartments(
+//             province: widget.province,
+//             city: widget.city,
+//             minPrice: widget.minPrice,
+//             maxPrice: widget.maxPrice,
+//             bedrooms: widget.bedrooms,
+//             hasWifi: widget.hasWifi,
+//             hasParking: widget.hasParking,
+//           );
+//     });
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: const Text("Filtered Results")),
+//       body: BlocBuilder<ApartmentCubit, ApartmentState>(
+//         builder: (context, state) {
+//           return switch (state) {
+//             ApartmentLoading() => const _LoadingView(),
+//             ApartmentEmpty() => const _EmptyView(),
+//             ApartmentFailure(message: final msg) => _ErrorView(message: msg),
+//             ApartmentLoaded(apartments: final list) => _ResultsList(apartments: list),
+//             _ => const SizedBox.shrink(),
+//           };
+//         },
+//       ),
+//     );
+//   }
+// }
+
+// // -------------------- UI WIDGETS --------------------
+
+// class _LoadingView extends StatelessWidget {
+//   const _LoadingView();
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return const Center(child: CircularProgressIndicator());
+//   }
+// }
+
+// class _EmptyView extends StatelessWidget {
+//   const _EmptyView();
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return const Center(
+//       child: Text("No apartments found with these filters"),
+//     );
+//   }
+// }
+
+// class _ErrorView extends StatelessWidget {
+//   final String message;
+
+//   const _ErrorView({required this.message});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Center(child: Text("Error: $message"));
+//   }
+// }
+
+// class _ResultsList extends StatelessWidget {
+//   final List apartments;
+
+//   const _ResultsList({required this.apartments});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return ListView.separated(
+//       padding: const EdgeInsets.all(16),
+//       itemCount: apartments.length,
+//       separatorBuilder: (_, __) => const SizedBox(height: 16),
+//       itemBuilder: (_, index) {
+//         return HomeApartmentCard(apartment: apartments[index]);
+//       },
+//     );
+//   }
+// }

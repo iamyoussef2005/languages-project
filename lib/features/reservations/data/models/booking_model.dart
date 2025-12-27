@@ -4,7 +4,7 @@ class BookingModel {
   final int id;
   final DateTime checkIn;
   final DateTime checkOut;
-  final String status; // pending | approved | rejected | cancelled | completed
+  final String status;
   final int guestsCount;
   final double totalPrice;
   final ApartmentModel apartment;
@@ -19,26 +19,30 @@ class BookingModel {
     required this.apartment,
   });
 
-  bool get isCancelled => status.toLowerCase() == "cancelled";
-  bool get isRejected => status.toLowerCase() == "rejected";
-  bool get isPending => status.toLowerCase() == "pending";
-  bool get isApproved => status.toLowerCase() == "approved";
-  bool get isCompleted => status.toLowerCase() == "completed";
+  bool get isCancelled => status == "cancelled";
+  bool get isRejected => status == "rejected";
+  bool get isPending => status == "pending";
+  bool get isApproved => status == "approved";
+  bool get isCompleted => status == "completed";
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
     return BookingModel(
-      id: int.parse(json['id'].toString()),
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
 
       checkIn: DateTime.parse(json['check_in'].toString()),
       checkOut: DateTime.parse(json['check_out'].toString()),
 
-      status: json['status']?.toString() ?? "",
+      status: (json['status'] ?? '').toString().toLowerCase(),
 
-      guestsCount: int.parse(json['person_number'].toString()),
+      guestsCount:
+          int.tryParse(json['person_number']?.toString() ?? '') ?? 0,
 
-      totalPrice: double.parse(json['total_price'].toString()),
+      totalPrice:
+          double.tryParse(json['total_price']?.toString() ?? '') ?? 0.0,
 
-      apartment: ApartmentModel.fromJson(json['apartment']),
+      apartment: json['apartment'] != null
+          ? ApartmentModel.fromJson(json['apartment'])
+          : ApartmentModel.empty(),
     );
   }
 }

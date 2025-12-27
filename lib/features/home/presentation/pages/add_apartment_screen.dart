@@ -1,10 +1,8 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:project1/core/utils/app_colors.dart';
 import 'package:project1/core/utils/app_responsives.dart';
 import 'package:project1/features/home/cubit/apartment_cubit.dart';
 import 'package:project1/features/home/cubit/apartment_state.dart';
@@ -32,6 +30,10 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
   final TextEditingController _maxPersons = TextEditingController();
 
   late String token;
+  String? _selectedProvince;
+
+  bool _hasWifi = false;
+  bool _hasParking = false;
 
   @override
   void initState() {
@@ -43,10 +45,6 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
     final prefs = await SharedPreferences.getInstance();
     token = prefs.getString('token') ?? '';
   }
-
-  String? _selectedProvince;
-  bool _hasWifi = false;
-  bool _hasParking = false;
 
   // ---------- IMAGE PICKER ----------
   Future<void> _pickImage(bool isFirst) async {
@@ -69,14 +67,13 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_firstPhoto == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("First photo is required")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("First photo is required")));
       return;
     }
 
     final apartment = ApartmentModel(
-      id: 0, // سيتم توليد id تلقائيًا من الـ API عند إضافة الشقة
+      id: 0,
       province: _selectedProvince!,
       city: _city.text.trim(),
       address: _address.text.trim(),
@@ -95,6 +92,8 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -107,15 +106,13 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
       body: BlocListener<ApartmentCubit, ApartmentState>(
         listener: (context, state) {
           if (state is ApartmentFailure) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.message)));
           }
 
           if (state is ApartmentBooked) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.message)));
             Navigator.pop(context);
           }
         },
@@ -125,7 +122,7 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
             key: _formKey,
             child: Column(
               children: [
-                _buildDropdown(),
+                _buildProvinceDropdown(colorScheme),
                 _buildTextField(_city, "City"),
                 _buildTextField(_address, "Address"),
                 _buildTextField(_price, "Price per Night", number: true),
@@ -143,11 +140,13 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
                       title: "Wi-Fi",
                       value: _hasWifi,
                       onChanged: (v) => setState(() => _hasWifi = v),
+                      colorScheme: colorScheme,
                     ),
                     _buildChoiceChip(
                       title: "Parking",
                       value: _hasParking,
                       onChanged: (v) => setState(() => _hasParking = v),
+                      colorScheme: colorScheme,
                     ),
                   ],
                 ),
@@ -158,9 +157,10 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     "Apartment Photos",
-                    style: const TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
+                      color: colorScheme.onBackground,
                     ),
                   ),
                 ),
@@ -173,35 +173,31 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
                       label: "First Photo (Required)",
                       file: _firstPhoto,
                       onTap: () => _pickImage(true),
+                      colorScheme: colorScheme,
                     ),
                     const SizedBox(width: 12),
                     _buildPhotoPicker(
                       label: "Second Photo (Optional)",
                       file: _secondPhoto,
                       onTap: () => _pickImage(false),
+                      colorScheme: colorScheme,
                     ),
                   ],
                 ),
 
                 const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 16,
-                    ),
-                  ),
-                  child: Text(
-                    "Submit Apartment",
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
+
+                /// ---------- SUBMIT BUTTON ----------
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: _submit,
+                    child: Text(
+                      "Submit Apartment",
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -230,49 +226,20 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: GoogleFonts.poppins(),
-          filled: true,
-          fillColor: Colors.grey.shade50,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-          ),
         ),
       ),
     );
   }
 
-  Widget _buildDropdown() {
+  Widget _buildProvinceDropdown(ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: DropdownButtonFormField<String>(
-        initialValue: _selectedProvince,
-        style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
-        icon: const Icon(Icons.keyboard_arrow_down_rounded),
+        value: _selectedProvince,
+        style: GoogleFonts.poppins(fontSize: 14, color: colorScheme.onSurface),
         decoration: InputDecoration(
           labelText: "Province",
           labelStyle: GoogleFonts.poppins(),
-          filled: true,
-          fillColor: Colors.grey.shade50,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-          ),
         ),
         items: const ['Damascus', 'Aleppo', 'Lattakia', 'Homs', 'Hama']
             .map(
@@ -295,20 +262,21 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
     required String title,
     required bool value,
     required ValueChanged<bool> onChanged,
+    required ColorScheme colorScheme,
   }) {
     return ChoiceChip(
       label: Text(
         title,
-        style: TextStyle(
-          color: value ? Colors.white : Colors.black87,
+        style: GoogleFonts.poppins(
+          color: value ? colorScheme.onPrimary : colorScheme.onSurface,
           fontWeight: FontWeight.w600,
         ),
       ),
       selected: value,
-      selectedColor: AppColors.primary,
-      backgroundColor: Colors.white,
+      selectedColor: colorScheme.primary,
+      backgroundColor: colorScheme.surface,
       side: BorderSide(
-        color: value ? AppColors.primary : Colors.grey.shade400,
+        color: value ? colorScheme.primary : colorScheme.outline,
         width: 1.2,
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -320,6 +288,7 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
     required String label,
     required File? file,
     required VoidCallback onTap,
+    required ColorScheme colorScheme,
   }) {
     return Expanded(
       child: InkWell(
@@ -327,9 +296,9 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
         child: Container(
           height: 140,
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade400),
+            border: Border.all(color: colorScheme.outline),
           ),
           child: file == null
               ? Center(
@@ -338,7 +307,10 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
                     child: Text(
                       label,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 13),
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 )
@@ -351,3 +323,4 @@ class _AddApartmentScreenState extends State<AddApartmentScreen> {
     );
   }
 }
+

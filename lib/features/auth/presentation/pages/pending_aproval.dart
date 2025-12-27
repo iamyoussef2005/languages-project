@@ -81,7 +81,7 @@ class PendingApprovalPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.hourglass_empty, size: 80, color: Colors.orange),
+                  Icon(Icons.hourglass_empty, size: 80, color: Colors.blueAccent),
                   const SizedBox(height: 20),
                   const Text(
                     "Your account is pending approval.\nPlease wait for the administrator.",

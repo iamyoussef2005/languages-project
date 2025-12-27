@@ -6,8 +6,6 @@ class HomeApartmentCard extends StatelessWidget {
   final ApartmentModel apartment;
 
   const HomeApartmentCard({super.key, required this.apartment});
-
-  // رابط الصور الأساسي (عدّله حسب السيرفر لديك)
   static const String baseImageUrl = "http://127.0.0.1:8000/storage/";
 
   @override
@@ -15,6 +13,8 @@ class HomeApartmentCard extends StatelessWidget {
     final String imageUrl = apartment.firstPhotoUrl != null
         ? baseImageUrl + apartment.firstPhotoUrl!
         : 'https://via.placeholder.com/400x200';
+
+    final colorScheme = Theme.of(context).colorScheme;
 
     return GestureDetector(
       onTap: () {
@@ -30,12 +30,12 @@ class HomeApartmentCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
-          color: Colors.white,
-          boxShadow: const [
+          color: colorScheme.surface, // استخدام colorScheme بدل الألوان الثابتة
+          boxShadow: [
             BoxShadow(
-              color: Colors.black12,
+              color: colorScheme.onSurface.withOpacity(0.12),
               blurRadius: 8,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -56,8 +56,8 @@ class HomeApartmentCard extends StatelessWidget {
                   return Container(
                     height: 180,
                     width: double.infinity,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.broken_image, size: 50),
+                    color: colorScheme.onSurface.withOpacity(0.1), // استخدام الألوان من colorScheme
+                    child: Icon(Icons.broken_image, size: 50, color: colorScheme.onSurface),
                   );
                 },
               ),
@@ -73,9 +73,10 @@ class HomeApartmentCard extends StatelessWidget {
                     apartment.address,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
+                      color: colorScheme.onSurface, // استخدام colorScheme للنصوص
                     ),
                   ),
 
@@ -84,9 +85,9 @@ class HomeApartmentCard extends StatelessWidget {
                   // المدينة + المحافظة
                   Text(
                     '${apartment.city}, ${apartment.province}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey,
+                      color: colorScheme.onSurfaceVariant, // اللون المتغير بناءً على الثيم
                     ),
                   ),
 
@@ -95,10 +96,10 @@ class HomeApartmentCard extends StatelessWidget {
                   // السعر
                   Text(
                     '${apartment.pricePerNight.toStringAsFixed(0)} / night',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: Colors.teal,
+                      color: colorScheme.primary, // استخدام primary من colorScheme
                     ),
                   ),
                 ],

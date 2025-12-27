@@ -427,60 +427,66 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  Widget _styledInput(
+ Widget _styledInput(
     String hint,
     TextEditingController controller, {
     required IconData icon,
     TextInputType keyboard = TextInputType.text,
     bool isPassword = false,
-  }) {
-    return StatefulBuilder(
-      builder: (context, setState) {
-        bool obscure = isPassword;
+}) {
+  return StatefulBuilder(
+    builder: (context, setState) {
+      // Declare 'obscure' here to manage password visibility toggle
+      bool obscure = isPassword ? _passwordVisibility : false;
 
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: TextField(
-            controller: controller,
-            obscureText: obscure,
-            keyboardType: keyboard,
-            style: const TextStyle(fontFamily: "Poppins", fontSize: 16),
-            decoration: InputDecoration(
-              labelText: hint,
-              labelStyle: const TextStyle(
-                fontFamily: "Poppins",
-                fontSize: 15,
-                color: Colors.grey,
-              ),
-              prefixIcon: Icon(icon, color: const Color(0xFF6C3FFA)),
-              suffixIcon: isPassword
-                  ? IconButton(
-                      icon: Icon(
-                        obscure ? Icons.visibility_off : Icons.visibility,
-                        color: const Color(0xFF6C3FFA),
-                      ),
-                      onPressed: () => setState(() => obscure = !obscure),
-                    )
-                  : null,
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 18,
-              ),
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: TextField(
+          controller: controller,
+          obscureText: obscure,
+          keyboardType: keyboard,
+          style: const TextStyle(fontFamily: "Poppins", fontSize: 16),
+          decoration: InputDecoration(
+            labelText: hint,
+            labelStyle: const TextStyle(
+              fontFamily: "Poppins",
+              fontSize: 15,
+              color: Colors.grey,
+            ),
+            prefixIcon: Icon(icon, color: const Color(0xFF6C3FFA)),
+            suffixIcon: isPassword
+                ? IconButton(
+                    icon: Icon(
+                      obscure ? Icons.visibility_off : Icons.visibility,
+                      color: const Color(0xFF6C3FFA),
+                    ),
+                    onPressed: () => setState(() {
+                      _passwordVisibility = !_passwordVisibility;
+                    }),
+                  )
+                : null,
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 18,
             ),
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
+
+bool _passwordVisibility = false; // Declare this outside the builder
+
 }

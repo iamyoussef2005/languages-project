@@ -32,7 +32,12 @@ class ApartmentModel {
     this.firstPhotoFile,
     this.secondPhotoFile,
   });
-
+  factory ApartmentModel.empty() {
+    return ApartmentModel(
+      id: 0, province: '', city: '', address: '', pricePerNight: 0, bedrooms: 0, bathroom: 0, maxperson: 0, hasWifi: false, hasParking: false,
+      
+    );
+  }
   factory ApartmentModel.fromJson(Map<String, dynamic> json) {
     return ApartmentModel(
       id: json['id'], // التأكد من استخراج id من الـ JSON

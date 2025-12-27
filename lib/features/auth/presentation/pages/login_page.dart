@@ -14,6 +14,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+
   bool _obscurePassword = true;
 
   @override
@@ -27,8 +28,7 @@ class _LoginPageState extends State<LoginPage> {
           if (state is AuthRejected) {
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-            Navigator.pushReplacementNamed(context, "/login");
+            ).showSnackBar(SnackBar(content: Text("Rejected!")));
           }
 
           if (state is AuthPendingApproval) {
@@ -42,56 +42,42 @@ class _LoginPageState extends State<LoginPage> {
               Navigator.pushReplacementNamed(context, "/landlord_home");
             }
           }
-
-          if (state is AuthError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-          }
         },
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 28),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 60),
+const SizedBox(height: 20),
+const SizedBox(height: 20),
 
-                // 🔵 Logo Circle
+                // 🔵 Logo
                 Container(
-                  padding: const EdgeInsets.all(28),
-                  decoration: BoxDecoration(
-                    color: purple,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: purple.withOpacity(0.3),
-                        blurRadius: 20,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.home_rounded,
-                    size: 55,
-                    color: Colors.white,
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // 🏠 HomeStay Title
-                Text(
-                  "HomeStay",
-                  style: GoogleFonts.poppins(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                  // padding: const EdgeInsets.all(28),
+                  // decoration: BoxDecoration(
+                  //   color: purple,
+                  //   shape: BoxShape.circle,
+                  //   boxShadow: [
+                  //     BoxShadow(
+                  //       color: purple.withOpacity(0.3),
+                  //       blurRadius: 20,
+                  //       offset: const Offset(0, 8),
+                  //     ),
+                  //   ],
+                  // ),
+                  child: Image.asset(
+                    'assets/logo.png',
+                    width: 250,
+                    
+                    fit: BoxFit.contain,
                   ),
                 ),
 
-                const SizedBox(height: 6),
+                const SizedBox(height: 20),
+
+                
+               
 
                 Text(
                   "Find your perfect home away from home",
@@ -104,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
 
                 const SizedBox(height: 40),
 
-                // 📱 Mobile Input
+                // 📱 Phone
                 _inputField(
                   controller: _phoneController,
                   icon: Icons.phone_rounded,
@@ -114,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
 
                 const SizedBox(height: 20),
 
-                // 🔐 Password Input
+                // 🔐 Password
                 _inputField(
                   controller: _passwordController,
                   icon: Icons.lock_rounded,
@@ -172,7 +158,6 @@ class _LoginPageState extends State<LoginPage> {
 
                 const SizedBox(height: 22),
 
-                // 📝 Register Text
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -202,7 +187,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // 📦 Custom Input Field
+  // 🔧 Custom Input Field
   Widget _inputField({
     required TextEditingController controller,
     required IconData icon,
@@ -219,14 +204,12 @@ class _LoginPageState extends State<LoginPage> {
       ),
       child: TextField(
         controller: controller,
-        obscureText: obscurePassword,
+        obscureText: isPassword ? obscurePassword : false,
+        enableSuggestions: !isPassword,
+        autocorrect: !isPassword,
         style: GoogleFonts.poppins(),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: GoogleFonts.poppins(
-            color: Colors.grey.shade500,
-            fontSize: 15,
-          ),
           prefixIcon: Icon(icon, color: purple),
           suffixIcon: isPassword
               ? IconButton(

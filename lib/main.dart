@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
+import 'package:project1/core/theme/theme_provider.dart';
+import 'package:provider/provider.dart'; // استيراد الـ Provider
 
 // Services
 import 'package:project1/data/services/auth_service.dart';
@@ -29,6 +31,7 @@ import 'package:project1/features/reservations/presentation/pages/bookings_page.
 import 'package:project1/features/home/presentation/pages/home_page.dart';
 import 'package:project1/features/auth/presentation/pages/signup_page.dart';
 import 'package:project1/features/home/presentation/pages/landlord_home_screen.dart';
+
 
 final GetIt getIt = GetIt.instance;
 
@@ -76,7 +79,7 @@ void setup() {
     () => ApartmentCubit(getIt<ApartmentRepository>())..loadApartments(),
   );
   getIt.registerFactory<BookingCubit>(
-    () => BookingCubit(getIt<BookingRepository>()), // إضافة BookingCubit
+    () => BookingCubit(getIt<BookingRepository>()), // إضافة BookingCubit هنا
   );
 }
 
@@ -95,19 +98,27 @@ void main() {
           create: (_) => getIt<BookingCubit>(), // إضافة BookingCubit هنا
         ),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: LoginPage(), // Start with login page
-        routes: {
-          "/login": (_) => LoginPage(),
-          "/register": (_) => SignUpPage(),
-          "/pendingApproval": (_) => PendingApprovalPage(),
-          "/home": (_) => HomePage(),
-          "/landlord_home": (_) => LandlordHomeScreen(),
-          "/filtered_apartments": (_) => FilterPage(),
-          "/bookings": (_) => BookingsPage(),
-          '/add_apartment': (_) => const AddApartmentScreen(),
-        },
+      child: ChangeNotifierProvider<ThemeProvider>(
+        create: (_) => ThemeProvider(),
+        child: Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: themeProvider.isDarkMode ? ThemeData.dark() : ThemeData.light(),
+              home: LoginPage(), // Start with login page
+              routes: {
+                "/login": (_) => LoginPage(),
+                "/register": (_) => SignUpPage(),
+                "/pendingApproval": (_) => PendingApprovalPage(),
+                "/home": (_) => HomePage(),
+                "/landlord_home": (_) => LandlordHomeScreen(),
+                "/filtered_apartments": (_) => FilterPage(),
+                "/bookings": (_) => BookingsPage(),
+                '/add_apartment': (_) => const AddApartmentScreen(),
+              },
+            );
+          },
+        ),
       ),
     ),
   );

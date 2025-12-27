@@ -8,73 +8,52 @@ class BookingCubit extends Cubit<BookingState> {
 
   BookingCubit(this.repository) : super(BookingInitial());
 
+  // ==========================
+  // حجوزات المستأجر
+  // ==========================
+
   Future<void> loadBookings() async {
     emit(BookingLoading());
 
     try {
       final bookings = await repository.getBookings();
-
-      final now = DateTime.now();
-
-      List<BookingModel> pending = [];
-      List<BookingModel> rejected = [];
-      List<BookingModel> cancelled = [];
-      List<BookingModel> approvedCurrent = [];
-      List<BookingModel> approvedPast = [];
-      List<BookingModel> completed = [];
-
-      for (var b in bookings) {
-        switch (b.status) {
-          case 'pending':
-            pending.add(b);
-            break;
-
-          case 'rejected':
-            rejected.add(b);
-            break;
-
-          case 'cancelled':
-            cancelled.add(b);
-            break;
-
-          case 'approved':
-            if (b.checkOut.isAfter(now)) {
-              approvedCurrent.add(b);     // حالي
-            } else {
-              approvedPast.add(b);        // سابق
-            }
-            break;
-
-          case 'completed':
-            completed.add(b);
-            break;
-        }
-      }
-
-      emit(BookingLoaded(
-        pending: pending,
-        current: approvedCurrent,
-        past: approvedPast,
-        cancelled: cancelled,
-        rejected: rejected,
-        completed: completed,
-      ));
+      _emitCategorizedBookings(bookings);
     } catch (e) {
       emit(BookingError(e.toString()));
     }
   }
 
-  Future<void> cancelBooking(int id) async {
-    emit(BookingLoading());
+  Future<void> cancelBooking(int bookingId) async {
     try {
-      await repository.cancelBooking(id); // تم تعديل المعامل
+      await repository.cancelBooking(bookingId);
       await loadBookings();
     } catch (e) {
       emit(BookingError(e.toString()));
     }
   }
 
-  // إضافة حجز جديد
+  Future<void> updateBooking({
+    required int bookingId,
+    required DateTime checkIn,
+    required DateTime checkOut,
+    required int guestsCount,
+  }) async {
+    emit(BookingLoading());
+
+    try {
+      await repository.updateBooking(
+        bookingId: bookingId,
+        checkIn: checkIn,
+        checkOut: checkOut,
+        guestsCount: guestsCount,
+      );
+
+      await loadBookings();
+    } catch (e) {
+      emit(BookingError(e.toString()));
+    }
+  }
+
   Future<void> createBooking({
     required int apartmentId,
     required String checkIn,
@@ -82,6 +61,7 @@ class BookingCubit extends Cubit<BookingState> {
     required int personNumber,
   }) async {
     emit(BookingLoading());
+
     try {
       final result = await repository.createBooking(
         apartmentId: apartmentId,
@@ -90,13 +70,94 @@ class BookingCubit extends Cubit<BookingState> {
         personNumber: personNumber,
       );
 
-      if (result['success']) {
-        emit(BookingSuccess(result['message'])); // حالة نجاح
-      } else {
-        emit(BookingError(result['message'])); // حالة فشل
-      }
+      result['success']
+          ? emit(BookingSuccess(result['message']))
+          : emit(BookingError(result['message']));
     } catch (e) {
-      emit(BookingError("Failed to create booking: $e"));
+      emit(BookingError(e.toString()));
     }
+  }
+
+  // ==========================
+  // حجوزات المالك
+  // ==========================
+
+  Future<void> loadOwnerBookings() async {
+    emit(BookingLoading());
+
+    try {
+      final bookings = await repository.getOwnerBookings();
+      _emitCategorizedBookings(bookings);
+    } catch (e) {
+      emit(BookingError(e.toString()));
+    }
+  }
+
+  Future<void> approveBooking(int bookingId) async {
+    try {
+      final result = await repository.approveBooking(bookingId);
+      emit(BookingSuccess(result['message']));
+      await loadOwnerBookings();
+    } catch (e) {
+      emit(BookingError(e.toString()));
+    }
+  }
+
+  Future<void> rejectBooking(int bookingId) async {
+    try {
+      final result = await repository.rejectBooking(bookingId);
+      emit(BookingSuccess(result['message']));
+      await loadOwnerBookings();
+    } catch (e) {
+      emit(BookingError(e.toString()));
+    }
+  }
+
+  // ==========================
+  // Helper
+  // ==========================
+
+  void _emitCategorizedBookings(List<BookingModel> bookings) {
+    final now = DateTime.now();
+
+    final pending = <BookingModel>[];
+    final rejected = <BookingModel>[];
+    final cancelled = <BookingModel>[];
+    final approvedCurrent = <BookingModel>[];
+    final approvedPast = <BookingModel>[];
+    final completed = <BookingModel>[];
+
+    for (final b in bookings) {
+      switch (b.status) {
+        case 'pending':
+          pending.add(b);
+          break;
+        case 'rejected':
+          rejected.add(b);
+          break;
+        case 'cancelled':
+          cancelled.add(b);
+          break;
+        case 'approved':
+          b.checkOut.isAfter(now)
+              ? approvedCurrent.add(b)
+              : approvedPast.add(b);
+          break;
+        case 'completed':
+          completed.add(b);
+          break;
+      }
+    }
+
+    emit(
+      BookingLoaded(
+        pending: pending,
+        current: approvedCurrent,
+        past: approvedPast,
+        cancelled: cancelled,
+        rejected: rejected,
+        completed: completed,
+      ),
+    );
   }
 }
